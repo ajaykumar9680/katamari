@@ -1,100 +1,119 @@
+// Import Three.js library
 import * as THREE from 'three';
 
+// Define global variables for Three.js objects
+let scene, camera, renderer, ball;
+
+// Define global variables for controlling ball movement
+let ballVelocity = new THREE.Vector3();
+let movementSpeed = 0.1;
+let rotationSpeed = 0.05; // Adjust rotation speed as needed
+let ballRadius = 5; // Increase ball size
+
+// Initialize function
 window.init = async (canvas) => {
-  //scene
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-  const renderer = new THREE.WebGLRenderer({ canvas });
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    // Set up Three.js scene
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ canvas });
 
-  //infinite grass ground
-  const grassTexture = new THREE.TextureLoader().load('assets/img/grass1.jpg');
-  grassTexture.wrapS = THREE.RepeatWrapping;
-  grassTexture.wrapT = THREE.RepeatWrapping;
-  grassTexture.repeat.set(100, 100); //repeat factor for the grass
+    // Create skybox
+    const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
+    const textureLoader = new THREE.TextureLoader();
+    const textureUrls = [
+      'assets/img/grass1.jpg',
+      'assets/img/grass1.jpg',
+      'assets/img/grass1.jpg',
+      'assets/img/grass1.jpg',
+      'assets/img/grass1.jpg',
+      'assets/img/grass1.jpg'
+    ];
+    const skyboxMaterials = textureUrls.map(url => new THREE.MeshBasicMaterial({
+        map: textureLoader.load(url),
+        side: THREE.BackSide // Render on the inside of the cube
+    }));
+    const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterials);
+    scene.add(skybox);
 
-  const groundGeometry = new THREE.PlaneGeometry(10000, 10000); //ground plane
-  const groundMaterial = new THREE.MeshBasicMaterial({ map: grassTexture });
-  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-  ground.rotation.x = -Math.PI / 2; // Rotate horizontal
-  scene.add(ground);
+    // Create ground plane (playable area)
+    const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
+    const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = Math.PI / 2; // Rotate to be horizontal
+    scene.add(ground);
 
-  //camera position
-  camera.position.set(0, 35, 80);
+    // Create the ball (Katamari)
+    const ballGeometry = new THREE.SphereGeometry(ballRadius, 32, 32); // Increase ball size
+    const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    ball = new THREE.Mesh(ballGeometry, ballMaterial);
+    scene.add(ball);
 
-  // Create the ball (katamari)
-  const ballGeometry = new THREE.SphereGeometry(10, 32, 32); //radius and segments
-  const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
-  const ball = new THREE.Mesh(ballGeometry, ballMaterial);
-  ball.position.set(0, 10, 0); //position to sit on top of the plane
-  scene.add(ball);
+    // Set up camera position
+    camera.position.set(0, 50, 100);
+    camera.lookAt(ball.position); // Always look at the ball
 
-  // Handle keyboard controls
-  const moveSpeed = 0.3;
-  const keyboardState = {};
-  document.addEventListener('keydown', (event) => {
-    keyboardState[event.key] = true;
-  });
-  document.addEventListener('keyup', (event) => {
-    keyboardState[event.key] = false;
-  });
+    // Start listening for keyboard events
+    document.addEventListener('keydown', handleKeyDown);
 
-  
-  function update() {
-    const planeSize = 1000; // Size of the plane
-    const ballRadius = 10; // Radius of the ball
-    const ballPosition = ball.position.clone();
-  
-    // Handle camera movement
-    if (keyboardState['ArrowLeft']) {
-      camera.position.x -= moveSpeed;
-    }
-    if (keyboardState['ArrowRight']) {
-      camera.position.x += moveSpeed;
-    }
-    if (keyboardState['ArrowUp']) {
-      camera.position.z -= moveSpeed;
-    }
-    if (keyboardState['ArrowDown']) {
-      camera.position.z += moveSpeed;
-    }
-  
-    // Handle ball movement
-    if (keyboardState['ArrowLeft']) {
-      ballPosition.x -= moveSpeed;
-    }
-    if (keyboardState['ArrowRight']) {
-      ballPosition.x += moveSpeed;
-    }
-    if (keyboardState['ArrowUp']) {
-      ballPosition.z -= moveSpeed;
-    }
-    if (keyboardState['ArrowDown']) {
-      ballPosition.z += moveSpeed;
-    }
-  
-    // for collision with the plane boundaries
-    if (ballPosition.x - ballRadius < -planeSize / 2) {
-      ballPosition.x = -planeSize / 2 + ballRadius;
-    }
-    if (ballPosition.x + ballRadius > planeSize / 2) {
-      ballPosition.x = planeSize / 2 - ballRadius;
-    }
-    if (ballPosition.z - ballRadius < -planeSize / 2) {
-      ballPosition.z = -planeSize / 2 + ballRadius;
-    }
-    if (ballPosition.z + ballRadius > planeSize / 2) {
-      ballPosition.z = planeSize / 2 - ballRadius;
-    }
-  
-    // Update the ball's position
-    ball.position.copy(ballPosition);
-  
-    renderer.render(scene, camera);
-  }
-
-  // Start the game loop
-  window.loop = (dt, canvas, input) => {
-    update();
-  };
+    // Start the game loop
+    loop();
 };
+
+// Game loop function
+window.loop = () => {
+    requestAnimationFrame(loop);
+
+    // Move the ball
+    ball.position.add(ballVelocity);
+
+    // Constrain ball position within playable area (inside the skybox)
+    const maxPosition = 500 - ballRadius; // Adjust for ball size
+    ball.position.x = THREE.MathUtils.clamp(ball.position.x, -maxPosition, maxPosition);
+    ball.position.z = THREE.MathUtils.clamp(ball.position.z, -maxPosition, maxPosition);
+
+    // Calculate rotation angle based on ball's movement direction
+    let targetRotation = Math.atan2(ballVelocity.x, ballVelocity.z);
+
+    // Smoothly rotate the ball towards the target rotation
+    ball.rotation.y += rotationSpeed * Math.sign(targetRotation - ball.rotation.y);
+
+    // Update camera position to follow the ball
+    camera.position.x = ball.position.x;
+    camera.position.z = ball.position.z + 100; // Adjust camera height
+    camera.lookAt(ball.position); // Always look at the ball
+
+    // Render the scene
+    renderer.render(scene, camera);
+};
+
+// Handle keyboard input for controlling ball movement
+function handleKeyDown(event) {
+    switch (event.key) {
+        case 'ArrowUp':
+            ballVelocity.z = -movementSpeed; // Move the ball upward
+            break;
+        case 'ArrowDown':
+            ballVelocity.z = movementSpeed; // Move the ball downward
+            break;
+        case 'ArrowLeft':
+            ballVelocity.x = -movementSpeed;
+            break;
+        case 'ArrowRight':
+            ballVelocity.x = movementSpeed;
+            break;
+    }
+}
+
+// Reset ball movement when arrow key is released
+document.addEventListener('keyup', (event) => {
+    switch (event.key) {
+        case 'ArrowUp':
+        case 'ArrowDown':
+            ballVelocity.z = 0;
+            break;
+        case 'ArrowLeft':
+        case 'ArrowRight':
+            ballVelocity.x = 0;
+            break;
+    }
+});
