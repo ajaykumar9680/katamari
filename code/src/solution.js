@@ -1,5 +1,12 @@
 // Import Three.js library
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+
+const monkeyUrl = new URL('../assets/scene.gltf', import.meta.url);
+
 
 // global variables for Three.js objects
 let scene, camera, renderer, ball;
@@ -49,6 +56,34 @@ window.init = async (canvas) => {
     // Adjust ball position to be on top of the ground plane
     ball.position.y = ballRadius;
     scene.add(ball);
+
+    const assetLoader = new GLTFLoader();
+
+// After loading the model
+assetLoader.load(monkeyUrl.href, function(gltf) {
+    const model = gltf.scene;
+
+    // Scale the model to make it larger
+    model.scale.set(20, 20, 20); // Adjust scale as needed
+
+    // Add the model to the scene
+    scene.add(model);
+
+    // Position the model
+    model.position.y=32;
+    model.position.x=100;
+    model.rotation.y = Math.PI / 3; // Rotate the model 90 degrees around the y-axis
+
+
+    // Add lighting to the scene
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(0, 10, 0); // Adjust light position
+    scene.add(directionalLight);
+
+    const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+    scene.add(ambientLight);
+
+}, undefined, function(error){console.log(error);});
 
     // Set up camera position
     camera.position.set(0, 50, 100);
