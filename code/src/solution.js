@@ -21,11 +21,11 @@ let ballRadius = 10; // Increase ball size
 window.init = async (canvas) => {
     // Set up Three.js scene
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 10000);
     renderer = new THREE.WebGLRenderer({ canvas });
 
     // Create skybox
-    const skyboxGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
+    const skyboxGeometry = new THREE.BoxGeometry(10000, 1000, 10000);
     const textureLoader = new THREE.TextureLoader();
     const textureUrls = [
         'assets/img/grass1.jpg',
@@ -43,7 +43,7 @@ window.init = async (canvas) => {
     scene.add(skybox);
 
     //ground plane (playable area)
-    const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
+    const groundGeometry = new THREE.PlaneGeometry(10000, 10000);
     const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide });
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.rotation.x = Math.PI / 2; // Rotate to be horizontal
@@ -106,10 +106,13 @@ window.loop = () => {
     // Move the ball
     ball.position.add(ballVelocity);
 
-    // Constrain ball position within playable area (inside the skybox)
-    const maxPosition = 500 - ballRadius; // Adjust for ball size
-    ball.position.x = THREE.MathUtils.clamp(ball.position.x, -maxPosition, maxPosition);
-    ball.position.z = THREE.MathUtils.clamp(ball.position.z, -maxPosition, maxPosition);
+    /// Constrain ball position within the ground area
+const groundSize = 10000; // Assuming the ground plane size is 1000x1000
+const maxPositionX = groundSize / 2 - ballRadius;
+const maxPositionZ = groundSize / 2 - ballRadius;
+ball.position.x = THREE.MathUtils.clamp(ball.position.x, -maxPositionX, maxPositionX);
+ball.position.z = THREE.MathUtils.clamp(ball.position.z, -maxPositionZ, maxPositionZ);
+
 
     // Calculate rotation angle based on ball's movement direction
     let targetRotation = Math.atan2(ballVelocity.x, ballVelocity.z);
@@ -159,11 +162,9 @@ document.addEventListener('keyup', (event) => {
 });
 
 // Function to add random cubes to the scene
-// Function to add random cubes to the scene
-// Function to add random cubes to the scene
 function addRandomCubes() {
   const numCubes = Math.floor(Math.random() * 20) + 20; // Random number of cubes (5-24)
-  const maxPosition = 500; // Maximum position within the playable area
+  const maxPosition = 5000; // Maximum position within the playable area
   const cubeSize = 20; // Adjust cube size as needed
 
   for (let i = 0; i < numCubes; i++) {
