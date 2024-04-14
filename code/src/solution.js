@@ -24,7 +24,7 @@ window.init = async (canvas) => {
     renderer = new THREE.WebGLRenderer({ canvas });
 
     //skybox
-    const skyboxGeometry = new THREE.BoxGeometry(10000, 1000, 10000);
+    const skyboxGeometry = new THREE.BoxGeometry(100000, 1000, 100000);
     const textureLoader = new THREE.TextureLoader();
     const textureUrls = [
         'assets/img/river1.jpg',//right
@@ -45,8 +45,37 @@ window.init = async (canvas) => {
     const groundGeometry = new THREE.PlaneGeometry(10000, 10000);
     const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x336159, side: THREE.DoubleSide });
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = Math.PI / 2; // Rotate horizontal
+    ground.rotation.x = Math.PI / 2; // Rotate horizontal //center one
     scene.add(ground);
+    // ground 2
+    const groundGeometry2 = new THREE.PlaneGeometry(10000, 10000);
+    const groundMaterial2 = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
+    const ground2 = new THREE.Mesh(groundGeometry2, groundMaterial2);
+    ground2.rotation.x = Math.PI / 2; // Rotate horizontal
+    ground2.position.set(10000, 0, 0); //right to center one
+    scene.add(ground2);
+    // ground 3
+    const groundGeometry3 = new THREE.PlaneGeometry(10000, 10000);
+    const groundMaterial3 = new THREE.MeshBasicMaterial({ color: 0x0000ff, side: THREE.DoubleSide });
+    const ground3 = new THREE.Mesh(groundGeometry3, groundMaterial3);
+    ground3.rotation.x = Math.PI / 2; // Rotate horizontal
+    ground3.position.set(-10000, 0, 0); //left to center one
+    scene.add(ground3);
+    // ground 4
+    const groundGeometry4 = new THREE.PlaneGeometry(10000, 10000);
+    const groundMaterial4 = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+    const ground4 = new THREE.Mesh(groundGeometry4, groundMaterial4);
+    ground4.rotation.x = Math.PI / 2; // Rotate horizontal
+    ground4.position.set(0, 0, -10000); //back to center one
+    scene.add(ground4);
+    // ground 5
+    const groundGeometry5 = new THREE.PlaneGeometry(10000, 10000);
+    const groundMaterial5 = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide });
+    const ground5 = new THREE.Mesh(groundGeometry5, groundMaterial5);
+    ground5.rotation.x = Math.PI / 2; // Rotate horizontal
+    ground5.position.set(10000, 0, -10000); //back right to center one
+    scene.add(ground5);
+
 
     /* i am saving this for later use now i am getting some errors i will learn to resolve those next***
     const textureLoader = new THREE.TextureLoader();
@@ -125,6 +154,7 @@ function onWindowResize() {
 window.loop = () => {
     requestAnimationFrame(loop);
     //ball.rotation.y=100;
+    checkCollision();
 
     // Move the ball
     ball.position.add(ballVelocity);
@@ -137,11 +167,9 @@ window.loop = () => {
     ball.position.z = THREE.MathUtils.clamp(ball.position.z, -maxPositionZ, maxPositionZ);
 
 
-    // Calculate rotation angle based on ball's movement direction
-    let targetRotation = Math.atan2(ballVelocity.x, ballVelocity.z);
+    //let targetRotation = Math.atan2(ballVelocity.x, ballVelocity.z);
 
-    // Smoothly rotate the ball towards the target rotation
-    ball.rotation.x += rotationSpeed * Math.sign(targetRotation - ball.rotation.y);
+    //ball.rotation.x += rotationSpeed * Math.sign(targetRotation - ball.rotation.y);
 
     //camera position to follow the ball
     camera.position.x = ball.position.x;
@@ -156,16 +184,21 @@ function handleKeyDown(event) {
     switch (event.key) {
         case 'ArrowUp':
             ballVelocity.z = -movementSpeed;
+            ball.rotation.x-=rotationSpeed;
             //ball.rotation.y=10;
             break;
         case 'ArrowDown':
             ballVelocity.z = movementSpeed;
+            ball.rotation.x+=rotationSpeed;
             break;
         case 'ArrowLeft':
             ballVelocity.x = -movementSpeed;
+            //ball.rotation.z+=rotationSpeed;
+            ball.rotation.y+=rotationSpeed;
             break;
         case 'ArrowRight':
             ballVelocity.x = movementSpeed;
+            ball.rotation.y-=rotationSpeed;
             break;
     }
 }
@@ -183,12 +216,13 @@ document.addEventListener('keyup', (event) => {
             break;
     }
 });
-
+const cubes=[];
+let numCubes;
 //to add random cubes to the scene
 function addRandomCubes() {
-  const numCubes = Math.floor(Math.random() * 20) + 20;
+  numCubes = Math.floor(Math.random() * 20) + 30;
   const maxPosition = 5000;
-  const cubeSize = 20;
+  const cubeSize = 30;
 
   for (let i = 0; i < numCubes; i++) {
       //cube geometry and material
@@ -198,13 +232,34 @@ function addRandomCubes() {
       // Create cube mesh
       const cube = new THREE.Mesh(geometry, material);
 
-      cube.position.x = Math.random() * (maxPosition - cubeSize * 2) - maxPosition + cubeSize;
-      cube.position.z = Math.random() * (maxPosition - cubeSize * 2) - maxPosition + cubeSize;
-      cube.position.y = cubeSize / 2; // Adjusting the cube position so that it sits on top of the ground plane
+      cube.position.x = 2*Math.random() * (maxPosition - cubeSize * 2) - maxPosition + cubeSize;
+      cube.position.z = 2*Math.random() * (maxPosition - cubeSize * 2) - maxPosition + cubeSize;
+      cube.position.y = cubeSize / 2; 
 
       //adding the cube to scene
       scene.add(cube);
+      cubes.push(cube);
   }
 }
+function checkCollision() {
+    for (let i = 0; i < cubes.length; i++) {
+        const cube = cubes[i];
+        const distance = ball.position.distanceTo(cube.position);
+        const collisionThreshold = ballRadius + (cube.geometry.parameters.width / 2); // Radius of ball + half the size of the cube
+        
+        if (distance < collisionThreshold) { 
+            // Attach cube to the ball
+            ball.add(cube);
+
+            //cube's position to be relative to the ball
+            cube.position.copy(cube.position.sub(ball.position));
+
+            cubes.splice(i, 1); // Remove cube from the list of cubes
+            i--; // Decrement index to account for removed cube
+        }
+    }
+}
+
+
 
 
