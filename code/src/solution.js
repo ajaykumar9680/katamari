@@ -4,8 +4,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
 
 
-const footballUrl = new URL('../assets/scene.gltf', import.meta.url);
-const girlUrl = new URL('../assets/models/barel_02.glb', import.meta.url);
+//const footballUrl = new URL('../assets/scene.gltf', import.meta.url);
+//const girlUrl = new URL('../assets/models/barel_02.glb', import.meta.url);
 
 let scene, camera, renderer, ball;
 let ballVelocity = new THREE.Vector3();
@@ -13,22 +13,22 @@ let movementSpeed = 0.1;
 let rotationSpeed = 0.5;
 let ballRadius = 20;
 let groundSize = 1000;
-let numCubes;
 let hdrs = [
-    '../assets/hdr/greentheme3.hdr', // Center ground
-    '../assets/hdr/golden.hdr', // Right ground
-    '../assets/hdr/golden.hdr', // Back ground
-    '../assets/hdr/greentheme3.hdr' // Back right ground
+    '../assets/hdr/golden.hdr', // Center ground
+    '../assets/hdr/cloudy.hdr', // Right ground
+    '../assets/hdr/sky2.hdr', // Back ground
+    '../assets/hdr/sky2.hdr' // Back right ground
 ];
+let models={
+    'football':new URL('../assets/scene.gltf', import.meta.url),
+    'barrel':new URL('../assets/models/barel_02.glb', import.meta.url),
+}
 
 window.init = async (canvas) => {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ canvas });
-    scene.fog = new THREE.Fog(0xffffff, 0, 500); //fog
-
-
-    
+    scene.fog = new THREE.Fog(0xffffff, 0, 1000); //fog
 
     createGround(0x336159, 0, 0, Math.PI / 2, 'assets/img/sky1.jpeg',30,'../assets/img/rock1.jpg'); // Center ground
     createGround(0xff0000, 1000, 0, Math.PI / 2,'assets/img/river1.jpg',20,'../assets/img/arid2_bk.jpg'); // Right ground
@@ -65,7 +65,12 @@ window.init = async (canvas) => {
     loop();
     window.addEventListener('resize', onWindowResize);
 
-    loadModel();
+    // Load football model
+    loadModel(models['football'].href, new THREE.Vector3(100, 30, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, Math.PI / 3, 0));
+
+    // Load girl model
+    loadModel(models['barrel'].href, new THREE.Vector3(400, 0, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, -Math.PI / 3, 0));
+    //loadModel();
 };
 
 function createGround(color, x, z, rotation, texturePath, numCubes,image) {
@@ -95,32 +100,14 @@ function createBall() {
     return ball;
 }
 
-function loadModel() {
+function loadModel(modelUrl, position, scale, rotation) {
     const loader = new GLTFLoader();
-    loader.load(footballUrl.href, function(gltf) {
+    loader.load(modelUrl, function(gltf) {
         const model = gltf.scene;
-        model.scale.set(20, 20, 20);
-        model.position.y = 30;
-        model.position.x = 100;
-        model.rotation.y = Math.PI / 3;
+        model.scale.set(scale.x, scale.y, scale.z);
+        model.position.copy(position);
+        model.rotation.copy(rotation);
         scene.add(model);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(0, 10, 0);
-        scene.add(directionalLight);
-
-        const ambientLight = new THREE.AmbientLight(0x404040);
-        scene.add(ambientLight);
-    });
-    loader.load(girlUrl.href, function(gltf) {
-        const model = gltf.scene;
-        model.scale.set(20, 20, 20);
-        //model.position.y = 30;
-        model.position.x = 400;
-        model.rotation.y = - Math.PI / 3;
-        scene.add(model);
-
-        
     });
 }
 
@@ -268,8 +255,11 @@ function setback(n){
         n1=n1+1;
         }
         n2=1;n3=1;n4=1;
-        if(cubeCount>10){
+        if(cubeCount>5 && cubeCount<10){
             maxX=1500-ballRadius;
+            if(ball.position.x>500){
+                minX=500+ballRadius;
+            }
         }
     }
     else if(n==2){
@@ -284,15 +274,17 @@ function setback(n){
             n2=n2+1;
             }
             n1=1;n3=1;n4=1;
-            if(cubeCount>25){
+            if(cubeCount>10){
                 //minX=500-ballRadius;
-                minZ=-1500+ballRadius;                
+                minZ=-1500+ballRadius; 
+                               
             }
     }
     else if(n==3){
         if(n3==1){
             //scene.background=new THREE.Color(0xff0000);
             console.log("ground3");
+            scene.fog = new THREE.Fog(0xffffff, 0, 500);
             new RGBELoader().load(hdrs[2],(environmentMap)=>{
     
                 //environmentMap.map=THREE.EquirectangularRefractionMapping;
@@ -301,11 +293,13 @@ function setback(n){
             n3=n3+1;
             }
             n1=1;n2=1;n4=1;
+            console.log(ball.position.z);
     }
     else if(n==4){
         if(n4==1){
             //scene.background=new THREE.Color(0xff0000);
             console.log("ground4");
+            scene.fog = new THREE.Fog(0xffffff, 0, 500);
             new RGBELoader().load(hdrs[2],(environmentMap)=>{
     
                 //environmentMap.map=THREE.EquirectangularRefractionMapping;
@@ -314,5 +308,9 @@ function setback(n){
             n4=n4+1;
             }
             n1=1;n2=1;n3=1;
+            if(ball.position.z<-500){
+                maxZ=-500-ballRadius;
+                minX=-500+ballRadius;
+            }
     }
 }
