@@ -1,0 +1,11 @@
+Model Information:
+* title:	Fruit.. Pineapple
+* source:	https://sketchfab.com/3d-models/fruit-pineapple-1aa94c9127004536a5f2b14f9743675b
+* author:	LeadBlackTech (https://sketchfab.com/drebond)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Fruit.. Pineapple" (https://sketchfab.com/3d-models/fruit-pineapple-1aa94c9127004536a5f2b14f9743675b) by LeadBlackTech (https://sketchfab.com/drebond) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

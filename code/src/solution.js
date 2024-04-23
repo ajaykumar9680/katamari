@@ -20,9 +20,9 @@ let models={
     'barrel':new URL('../assets/models/barel_02.glb', import.meta.url),
     'candle':new URL('../assets/models/candle/brass_candleholders_1k.gltf', import.meta.url),
     'stool':new URL('../assets/models/stool/folding_wooden_stool_1k.gltf', import.meta.url),
-    'pineapple':new URL('../assets/models/pineapple/fruit.._pineapple.glb', import.meta.url),
-    'jogan':new URL('../assets/models/pineapple/jogan_fruit.glb', import.meta.url),
-    'pomelo':new URL('../assets/models/pineapple/pomelo_fruit.glb', import.meta.url),
+    'pineapple':new URL('../assets/models/beach_ball.glb', import.meta.url),
+    'skull':new URL('../assets/models/skull_downloadable.glb', import.meta.url),
+    'pomelo':new URL('../assets/models/sun_glasses.glb', import.meta.url),
 
 
 }
@@ -33,11 +33,11 @@ window.init = async (canvas) => {
     renderer = new THREE.WebGLRenderer({ canvas });
     scene.fog = new THREE.Fog(0xffffff, 0, 1000); //fog
 
-    createGround(0x336159, 0, 0, Math.PI / 2, 'assets/img/grass1.jpg',40,'../assets/img/rock1.jpg'); // Center ground
-    createGround(0xff0000, 1000, 0, Math.PI / 2,'assets/img/room.avif',30,'../assets/img/arid2_bk.jpg'); // Right ground
+    createGround(0x336159, 0, 0, Math.PI / 2, 'assets/img/grass1.jpg',40,'../assets/img/rock1.jpg',models['pineapple'].href,new THREE.Vector3(13, 13, 13)); // Center ground
+    createGround(0xff0000, 1000, 0, Math.PI / 2,'assets/img/room.avif',30,'../assets/img/arid2_bk.jpg',models['pomelo'].href,new THREE.Vector3(2, 2, 2)); // Right ground
     //createGround(0x0000ff, -1000, 0, Math.PI / 2,'assets/img/thunder1.jpg'); // Left ground
-    createGround(0xffff00, 0, -1000, Math.PI / 2,'assets/img/river1.jpg',20,'../assets/img/river1.jpg'); // Back ground
-    createGround(0x00ffff, 1000, -1000, Math.PI / 2,'assets/img/road.jpg',10,'../assets/img/sky1.jpeg'); // Back right ground
+    createGround(0xffff00, 0, -1000, Math.PI / 2,'assets/img/river1.jpg',20,'../assets/img/river1.jpg',models['football'].href,new THREE.Vector3(20, 20, 20)); // Back ground
+    createGround(0x00ffff, 1000, -1000, Math.PI / 2,'assets/img/road.jpg',10,'../assets/img/sky1.jpeg',models['skull'].href,new THREE.Vector3(20, 20, 20)); // Back right ground
 
     ball = createBall();
     scene.add(ball);
@@ -68,7 +68,7 @@ window.init = async (canvas) => {
 
     window.addEventListener('resize', onWindowResize);
     // football model
-    loadModel(models['football'].href, new THREE.Vector3(100, 30, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, Math.PI / 3, 0));
+    loadModel(models['football'].href, new THREE.Vector3(100, 20, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, Math.PI / 3, 0));
     // Load barrel model
     loadModel(models['barrel'].href, new THREE.Vector3(400, 0, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, -Math.PI / 3, 0));
     loadModel(models['candle'].href, new THREE.Vector3(300, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
@@ -77,13 +77,13 @@ window.init = async (canvas) => {
 
     //loadModel(models['pomelo'].href, new THREE.Vector3(250, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
 
-    loadModel(models['jogan'].href, new THREE.Vector3(350, 0, 0), new THREE.Vector3(180, 180, 180), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['skull'].href, new THREE.Vector3(350, 0, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, -Math.PI / 3, 0));
 
 
     
 };
 
-function createGround(color, x, z, rotation, texturePath, numCubes,image) {
+function createGround(color, x, z, rotation, texturePath, numCubes,image,modelUrl,scale) {
     const geometry = new THREE.PlaneGeometry(groundSize, groundSize);
     const textureLoader = new THREE.TextureLoader();
     const texture = textureLoader.load(texturePath);
@@ -96,6 +96,7 @@ function createGround(color, x, z, rotation, texturePath, numCubes,image) {
     ground.position.set(x, 0, z);
     scene.add(ground);
     addRandomCubes(x, z, numCubes,image);
+    RandomModel(x,z,numCubes,modelUrl,scale)
 }
 
 
@@ -119,6 +120,24 @@ function loadModel(modelUrl, position, scale, rotation) {
         model.rotation.copy(rotation);
         scene.add(model);
     });
+}
+const randomModels=[];
+function RandomModel(positionX,positionZ,numModels,modelUrl,scale) {
+    const loader = new GLTFLoader();
+    //const scale=10;
+    const maxPosition=500;
+    for(let i=0;i<numModels;i++){
+    loader.load(modelUrl, function(gltf) {
+        const model = gltf.scene;
+        model.scale.set(scale.x, scale.y, scale.z);
+        const randomX = positionX + 2 * Math.random() * (maxPosition - scale.x * 2) - maxPosition + scale.x;
+        const randomZ = positionZ + 2 * Math.random() * (maxPosition - scale.z * 2) - maxPosition + scale.z;
+
+        model.position.set(randomX, scale.y, randomZ);
+        //model.rotation.copy(rotation);
+        scene.add(model);
+        cubes.push(model);
+    });}
 }
 
 function onWindowResize() {
@@ -225,7 +244,7 @@ function checkCollision() {
     for (let i = 0; i < cubes.length; i++) {
         const cube = cubes[i];
         const distance = ball.position.distanceTo(cube.position);
-        const collisionThreshold = ballRadius + (cube.geometry.parameters.width / 2);
+        const collisionThreshold = ballRadius + (cube.scale.y / 2);
         if (distance < collisionThreshold) {
             ball.add(cube);
             cube.position.copy(cube.position.sub(ball.position));
