@@ -75,7 +75,15 @@ window.onload = () => {
   // get the <canvas /> DOM element
   _canvas = document.getElementById('canvas');
 
-  
+  // add handlers
+  document.addEventListener('keydown', (event) => {
+    const key = event.key;
+    _input.keys.add(key);
+  });
+  document.addEventListener('keyup', (event) => {
+    const key = event.key;
+    _input.keys.delete(key);
+  });
 
   // attach the solution script
   attachScript();

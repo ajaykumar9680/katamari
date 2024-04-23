@@ -5,7 +5,7 @@ import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
 
 let scene, camera, renderer, ball;
 let ballVelocity = new THREE.Vector3();
-let movementSpeed = 0.1;
+let movementSpeed = 1.1;
 
 let ballRadius = 20;
 let groundSize = 1000;
@@ -18,6 +18,13 @@ let hdrs = [
 let models={
     'football':new URL('../assets/scene.gltf', import.meta.url),
     'barrel':new URL('../assets/models/barel_02.glb', import.meta.url),
+    'candle':new URL('../assets/models/candle/brass_candleholders_1k.gltf', import.meta.url),
+    'stool':new URL('../assets/models/stool/folding_wooden_stool_1k.gltf', import.meta.url),
+    'pineapple':new URL('../assets/models/pineapple/fruit.._pineapple.glb', import.meta.url),
+    'jogan':new URL('../assets/models/pineapple/jogan_fruit.glb', import.meta.url),
+    'pomelo':new URL('../assets/models/pineapple/pomelo_fruit.glb', import.meta.url),
+
+
 }
 
 window.init = async (canvas) => {
@@ -56,14 +63,23 @@ window.init = async (canvas) => {
     camera.position.set(0, 90, 100);
     camera.lookAt(ball.position);
     orbit.update();
+    const axesHelper = new THREE.AxesHelper( 50,50,50 );
+    scene.add( axesHelper );
 
-    document.addEventListener('keydown', handleKeyDown);
-    loop();
     window.addEventListener('resize', onWindowResize);
     // football model
     loadModel(models['football'].href, new THREE.Vector3(100, 30, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, Math.PI / 3, 0));
     // Load barrel model
     loadModel(models['barrel'].href, new THREE.Vector3(400, 0, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['candle'].href, new THREE.Vector3(300, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['stool'].href, new THREE.Vector3(200, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
+    //loadModel(models['pineapple'].href, new THREE.Vector3(100, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
+
+    //loadModel(models['pomelo'].href, new THREE.Vector3(250, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
+
+    loadModel(models['jogan'].href, new THREE.Vector3(350, 0, 0), new THREE.Vector3(180, 180, 180), new THREE.Euler(0, -Math.PI / 3, 0));
+
+
     
 };
 
@@ -116,11 +132,27 @@ let minX = -500 + ballRadius;
 let maxX = 500 - ballRadius;
 let minZ = -500 + ballRadius;
 let maxZ = 450 - ballRadius;
-
-window.loop = (canvas,dt) => {
-    requestAnimationFrame(loop);
+let rotationSpeed = 0.01;
+window.loop = (dt,cavas,input) => {
     checkCollision();
     ball.position.add(ballVelocity);
+
+    if (input.keys.has('ArrowUp')) {
+        ballVelocity.z = -(movementSpeed * dt * 0.2);
+        ball.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -rotationSpeed * dt);
+    } 
+    if (input.keys.has('ArrowDown')) {
+        ballVelocity.z = movementSpeed * dt * 0.2;
+        ball.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), rotationSpeed * dt);
+    }
+    if (input.keys.has('ArrowLeft')) {
+        ballVelocity.x = -movementSpeed * dt * 0.2;
+        ball.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), rotationSpeed * dt);
+    } 
+    if (input.keys.has('ArrowRight')) {
+        ballVelocity.x = movementSpeed * dt * 0.2;
+        ball.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), -rotationSpeed * dt);
+    }
     
     if(camera.position.x>500 && camera.position.z>-400){
         setback(2);
@@ -149,27 +181,7 @@ window.loop = (canvas,dt) => {
     renderer.render(scene, camera);
 };
 
-let rotationSpeed = 0.5;
-function handleKeyDown(event) {
-    switch (event.key) {
-        case 'ArrowUp':
-            ballVelocity.z = -movementSpeed;
-            ball.rotation.x -= rotationSpeed;
-            break;
-        case 'ArrowDown':
-            ballVelocity.z = movementSpeed;
-            ball.rotation.x += rotationSpeed;
-            break;
-        case 'ArrowLeft':
-            ballVelocity.x = -movementSpeed;
-            ball.rotation.z += rotationSpeed;
-            break;
-        case 'ArrowRight':
-            ballVelocity.x = movementSpeed;
-            ball.rotation.z -= rotationSpeed;
-            break;
-    }
-}
+
 
 document.addEventListener('keyup', (event) => {
     switch (event.key) {
@@ -220,7 +232,7 @@ function checkCollision() {
             cubes.splice(i, 1);
             i--;
             cubeCount += 1;
-            increaseBallSize(cubeCount);
+            //increaseBallSize(cubeCount);
         }
     }
 }
