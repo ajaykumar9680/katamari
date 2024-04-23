@@ -26,18 +26,22 @@ let models={
 
 
 }
-
+let timer = 0;
+let timerDisplay;
+let score=0;
+let scoreDisplay;
+let gameDisplay;
 window.init = async (canvas) => {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 10000);
     renderer = new THREE.WebGLRenderer({ canvas });
     scene.fog = new THREE.Fog(0xffffff, 0, 1000); //fog
 
-    createGround(0x336159, 0, 0, Math.PI / 2, 'assets/img/grass1.jpg',40,'../assets/img/rock1.jpg',models['pineapple'].href,new THREE.Vector3(13, 13, 13)); // Center ground
-    createGround(0xff0000, 1000, 0, Math.PI / 2,'assets/img/room.avif',30,'../assets/img/arid2_bk.jpg',models['pomelo'].href,new THREE.Vector3(2, 2, 2)); // Right ground
+    createGround(0x336159, 0, 0, Math.PI / 2, 'assets/img/grass1.jpg',9,'../assets/img/rock1.jpg',models['pineapple'].href,new THREE.Vector3(13, 13, 13),10); // Center ground
+    createGround(0xff0000, 1000, 0, Math.PI / 2,'assets/img/room.avif',10,'../assets/img/arid2_bk.jpg',models['pomelo'].href,new THREE.Vector3(2, 2, 2),15); // Right ground
     //createGround(0x0000ff, -1000, 0, Math.PI / 2,'assets/img/thunder1.jpg'); // Left ground
-    createGround(0xffff00, 0, -1000, Math.PI / 2,'assets/img/river1.jpg',20,'../assets/img/river1.jpg',models['football'].href,new THREE.Vector3(20, 20, 20)); // Back ground
-    createGround(0x00ffff, 1000, -1000, Math.PI / 2,'assets/img/road.jpg',10,'../assets/img/sky1.jpeg',models['skull'].href,new THREE.Vector3(20, 20, 20)); // Back right ground
+    createGround(0xffff00, 0, -1000, Math.PI / 2,'assets/img/river1.jpg',10,'../assets/img/river1.jpg',models['football'].href,new THREE.Vector3(20, 20, 20),13); // Back ground
+    createGround(0x00ffff, 1000, -1000, Math.PI / 2,'assets/img/road.jpg',6,'../assets/img/sky1.jpeg',models['skull'].href,new THREE.Vector3(20, 20, 20),8); // Back right ground
 
     ball = createBall();
     scene.add(ball);
@@ -80,10 +84,33 @@ window.init = async (canvas) => {
     loadModel(models['skull'].href, new THREE.Vector3(350, 0, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, -Math.PI / 3, 0));
 
 
-    
+    //timer
+    timerDisplay = document.createElement('div');
+    timerDisplay.style.position = 'absolute';
+    timerDisplay.style.top = '10px';
+    timerDisplay.style.left = '10px';
+    timerDisplay.style.color = 'red';
+    timerDisplay.style.fontSize='24px';
+    document.body.appendChild(timerDisplay);
+    //score
+    scoreDisplay = document.createElement('div');
+    scoreDisplay.style.position = 'absolute';
+    scoreDisplay.style.top = '40px';
+    scoreDisplay.style.left = '10px';
+    scoreDisplay.style.color = 'white';
+    scoreDisplay.style.fontSize='24px';
+    document.body.appendChild(scoreDisplay);
+    //game win
+    gameDisplay = document.createElement('div');
+    gameDisplay.style.position = 'absolute';
+    gameDisplay.style.top = '80px';
+    gameDisplay.style.left = '80px';
+    gameDisplay.style.color = 'green';
+    gameDisplay.style.fontSize='42px';
+    document.body.appendChild(gameDisplay);
 };
 
-function createGround(color, x, z, rotation, texturePath, numCubes,image,modelUrl,scale) {
+function createGround(color, x, z, rotation, texturePath, numCubes,image,modelUrl,scale,numModels) {
     const geometry = new THREE.PlaneGeometry(groundSize, groundSize);
     const textureLoader = new THREE.TextureLoader();
     const texture = textureLoader.load(texturePath);
@@ -96,7 +123,7 @@ function createGround(color, x, z, rotation, texturePath, numCubes,image,modelUr
     ground.position.set(x, 0, z);
     scene.add(ground);
     addRandomCubes(x, z, numCubes,image);
-    RandomModel(x,z,numCubes,modelUrl,scale)
+    RandomModel(x,z,numModels,modelUrl,scale)
 }
 
 
@@ -153,6 +180,19 @@ let minZ = -500 + ballRadius;
 let maxZ = 450 - ballRadius;
 let rotationSpeed = 0.01;
 window.loop = (dt,cavas,input) => {
+    timer += dt / 1000;
+    const minutes = Math.floor(timer / 60);
+    const seconds = Math.floor(timer % 60);
+    //timer display
+    timerDisplay.textContent = 'Time: ' + minutes + 'm ' + seconds + 's';
+    score = cubeCount;
+    scoreDisplay.textContent = 'Score : '+score;
+    //win
+    if(cubeCount>30){
+        gameDisplay.textContent = "Hey!!, you Won the Game";
+        return;
+    }
+
     checkCollision();
     ball.position.add(ballVelocity);
 
@@ -184,9 +224,6 @@ window.loop = (dt,cavas,input) => {
     }
     else if(camera.position.x<500 && camera.position.z>-400){
         setback(1);
-    }
-    if(cubeCount==10||cubeCount==25 ||cubeCount==5 ||cubeCount==20){
-        console.log('cube count: ',cubeCount);
     }
 
 
@@ -278,7 +315,7 @@ function setback(n){
         n1=n1+1;
         }
         n2=1;n3=1;n4=1;
-        if(cubeCount>5 && cubeCount<10){
+        if(cubeCount>5){
             maxX=1500-ballRadius;
             if(ball.position.x>500){
                 minX=500+ballRadius;
@@ -297,7 +334,7 @@ function setback(n){
             n2=n2+1;
             }
             n1=1;n3=1;n4=1;
-            if(cubeCount>10){
+            if(cubeCount>15){
                 //minX=500-ballRadius;
                 minZ=-1500+ballRadius; 
                                
