@@ -38,7 +38,7 @@ window.init = async (canvas) => {
     scene.fog = new THREE.Fog(0xffffff, 0, 1000); //fog
 
     createGround(0x336159, 0, 0, Math.PI / 2, 'assets/img/grass1.jpg',9,'../assets/img/rock1.jpg',models['pineapple'].href,new THREE.Vector3(13, 13, 13),10); // Center ground
-    createGround(0xff0000, 1000, 0, Math.PI / 2,'assets/img/room.avif',10,'../assets/img/arid2_bk.jpg',models['pomelo'].href,new THREE.Vector3(2, 2, 2),15); // Right ground
+    createGround(0xff0000, 1000, 0, Math.PI / 2,'assets/img/room.avif',15,'../assets/img/arid2_bk.jpg',models['pomelo'].href,new THREE.Vector3(2, 2, 2),15); // Right ground
     //createGround(0x0000ff, -1000, 0, Math.PI / 2,'assets/img/thunder1.jpg'); // Left ground
     createGround(0xffff00, 0, -1000, Math.PI / 2,'assets/img/river1.jpg',10,'../assets/img/river1.jpg',models['football'].href,new THREE.Vector3(20, 20, 20),13); // Back ground
     createGround(0x00ffff, 1000, -1000, Math.PI / 2,'assets/img/road.jpg',6,'../assets/img/sky1.jpeg',models['skull'].href,new THREE.Vector3(20, 20, 20),8); // Back right ground
@@ -72,16 +72,16 @@ window.init = async (canvas) => {
 
     window.addEventListener('resize', onWindowResize);
     // football model
-    loadModel(models['football'].href, new THREE.Vector3(100, 20, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, Math.PI / 3, 0));
+    loadModel(models['football'].href, new THREE.Vector3(400, 20, -400), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, Math.PI / 3, 0));
     // Load barrel model
-    loadModel(models['barrel'].href, new THREE.Vector3(400, 0, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, -Math.PI / 3, 0));
-    loadModel(models['candle'].href, new THREE.Vector3(300, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
-    loadModel(models['stool'].href, new THREE.Vector3(200, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['barrel'].href, new THREE.Vector3(900, -20, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['candle'].href, new THREE.Vector3(-200, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['stool'].href, new THREE.Vector3(-300, 0, -200), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
     //loadModel(models['pineapple'].href, new THREE.Vector3(100, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
 
     //loadModel(models['pomelo'].href, new THREE.Vector3(250, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
 
-    loadModel(models['skull'].href, new THREE.Vector3(350, 0, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['skull'].href, new THREE.Vector3(350, 20, -200), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, -Math.PI / 3, 0));
 
 
     //timer
@@ -180,6 +180,11 @@ let minZ = -500 + ballRadius;
 let maxZ = 450 - ballRadius;
 let rotationSpeed = 0.01;
 window.loop = (dt,cavas,input) => {
+    //win
+    if(cubeCount>30){
+        gameDisplay.textContent = "Hey!!, you Won the Game";
+        return;
+    }
     timer += dt / 1000;
     const minutes = Math.floor(timer / 60);
     const seconds = Math.floor(timer % 60);
@@ -187,11 +192,7 @@ window.loop = (dt,cavas,input) => {
     timerDisplay.textContent = 'Time: ' + minutes + 'm ' + seconds + 's';
     score = cubeCount;
     scoreDisplay.textContent = 'Score : '+score;
-    //win
-    if(cubeCount>30){
-        gameDisplay.textContent = "Hey!!, you Won the Game";
-        return;
-    }
+    
 
     checkCollision();
     ball.position.add(ballVelocity);
