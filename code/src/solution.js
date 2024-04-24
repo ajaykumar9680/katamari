@@ -5,7 +5,7 @@ import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
 
 let scene, camera, renderer, ball;
 let ballVelocity = new THREE.Vector3();
-let movementSpeed = 1.1;
+let movementSpeed = 0.002;
 
 let ballRadius = 20;
 let groundSize = 1000;
@@ -26,6 +26,8 @@ let models={
 
 
 }
+
+
 let timer = 0;
 let timerDisplay;
 let score=0;
@@ -106,8 +108,21 @@ window.init = async (canvas) => {
     gameDisplay.style.top = '80px';
     gameDisplay.style.left = '80px';
     gameDisplay.style.color = 'green';
-    gameDisplay.style.fontSize='42px';
+    gameDisplay.style.fontSize='60px';
     document.body.appendChild(gameDisplay);
+
+    
+    const listener = new THREE.AudioListener();
+    const sound = new THREE.Audio( listener );
+    const audioLoader = new THREE.AudioLoader();
+    camera.add( listener );
+
+    audioLoader.load( '../assets/music/vennello.mp3', function( buffer ) {
+        sound.setBuffer( buffer );
+        sound.setLoop( true );
+        sound.setVolume( 0.1 );
+        sound.play();
+    });
 };
 
 function createGround(color, x, z, rotation, texturePath, numCubes,image,modelUrl,scale,numModels) {
@@ -182,7 +197,7 @@ let rotationSpeed = 0.01;
 window.loop = (dt,cavas,input) => {
     //win
     if(cubeCount>30){
-        gameDisplay.textContent = "Hey!!, you Won the Game";
+        gameDisplay.textContent = "Hey!!, you Won the Game  -  Enjoy Music";
         return;
     }
     timer += dt / 1000;
@@ -198,19 +213,19 @@ window.loop = (dt,cavas,input) => {
     ball.position.add(ballVelocity);
 
     if (input.keys.has('ArrowUp')) {
-        ballVelocity.z = -(movementSpeed * dt * 0.2);
+        ballVelocity.z -= (movementSpeed * dt);
         ball.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -rotationSpeed * dt);
     } 
     if (input.keys.has('ArrowDown')) {
-        ballVelocity.z = movementSpeed * dt * 0.2;
+        ballVelocity.z += (movementSpeed * dt);
         ball.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), rotationSpeed * dt);
     }
     if (input.keys.has('ArrowLeft')) {
-        ballVelocity.x = -movementSpeed * dt * 0.2;
+        ballVelocity.x -= (movementSpeed * dt);
         ball.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), rotationSpeed * dt);
     } 
     if (input.keys.has('ArrowRight')) {
-        ballVelocity.x = movementSpeed * dt * 0.2;
+        ballVelocity.x += (movementSpeed * dt);
         ball.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), -rotationSpeed * dt);
     }
     
@@ -285,6 +300,16 @@ function checkCollision() {
         const collisionThreshold = ballRadius + (cube.scale.y / 2);
         if (distance < collisionThreshold) {
             ball.add(cube);
+            const listener = new THREE.AudioListener();
+            const sound = new THREE.Audio( listener );
+            const audioLoader = new THREE.AudioLoader();
+            camera.add( listener );
+            
+            audioLoader.load( '../assets/music/hit2.mp3', function( buffer ) {
+                sound.setBuffer( buffer );
+                sound.setVolume( 0.5 );
+                sound.play();
+            });
             cube.position.copy(cube.position.sub(ball.position));
             cubes.splice(i, 1);
             i--;
