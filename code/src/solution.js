@@ -26,27 +26,37 @@ let models={
 
 
 }
-
+let backgroundImage1;
+let backgroundImage2;
+let backgroundImage3;
+let backgroundImage4;
 
 let timer = 0;
 let timerDisplay;
 let score=0;
 let scoreDisplay;
 let gameDisplay;
+let countDisplay;
 window.init = async (canvas) => {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 10000);
     renderer = new THREE.WebGLRenderer({ canvas });
     scene.fog = new THREE.Fog(0xffffff, 0, 1000); //fog
 
-    createGround(0x336159, 0, 0, Math.PI / 2, 'assets/img/grass1.jpg',9,'../assets/img/rock1.jpg',models['pineapple'].href,new THREE.Vector3(13, 13, 13),10); // Center ground
+    createGround(0x336159, 0, 0, Math.PI / 2, 'assets/img/grass1.jpg',9,'../assets/img/rock1.jpg',models['pineapple'].href,new THREE.Vector3(13, 13, 13),13); // Center ground
     createGround(0xff0000, 1000, 0, Math.PI / 2,'assets/img/room.avif',15,'../assets/img/arid2_bk.jpg',models['pomelo'].href,new THREE.Vector3(2, 2, 2),15); // Right ground
     //createGround(0x0000ff, -1000, 0, Math.PI / 2,'assets/img/thunder1.jpg'); // Left ground
     createGround(0xffff00, 0, -1000, Math.PI / 2,'assets/img/river1.jpg',10,'../assets/img/river1.jpg',models['football'].href,new THREE.Vector3(20, 20, 20),13); // Back ground
-    createGround(0x00ffff, 1000, -1000, Math.PI / 2,'assets/img/road.jpg',6,'../assets/img/sky1.jpeg',models['skull'].href,new THREE.Vector3(20, 20, 20),8); // Back right ground
+    createGround(0x00ffff, 1000, -1000, Math.PI / 2,'assets/img/road.jpg',6,'../assets/img/sky1.jpeg',models['skull'].href,new THREE.Vector3(20, 20, 20),15); // Back right ground
 
     ball = createBall();
     scene.add(ball);
+
+    const textureLoader = new THREE.TextureLoader();
+    backgroundImage1 = textureLoader.load('assets/img/ground1.jpeg');
+    backgroundImage2 = textureLoader.load('assets/img/ground2.jpg');
+    backgroundImage3 = textureLoader.load('assets/img/ground4.jpg');
+    backgroundImage4 = textureLoader.load('assets/img/river1.jpg');
 
     //lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); //white light
@@ -102,6 +112,14 @@ window.init = async (canvas) => {
     scoreDisplay.style.color = 'white';
     scoreDisplay.style.fontSize='24px';
     document.body.appendChild(scoreDisplay);
+
+    countDisplay = document.createElement('div');
+    countDisplay.style.position = 'absolute';
+    countDisplay.style.top = '70px';
+    countDisplay.style.left = '10px';
+    countDisplay.style.color = 'blue';
+    countDisplay.style.fontSize='24px';
+    document.body.appendChild(countDisplay);
     //game win
     gameDisplay = document.createElement('div');
     gameDisplay.style.position = 'absolute';
@@ -115,13 +133,13 @@ window.init = async (canvas) => {
     const listener = new THREE.AudioListener();
     const sound = new THREE.Audio( listener );
     const audioLoader = new THREE.AudioLoader();
-    camera.add( listener );
+    ball.add( listener );
 
     audioLoader.load( '../assets/music/vennello.mp3', function( buffer ) {
         sound.setBuffer( buffer );
         sound.setLoop( true );
         sound.setVolume( 0.1 );
-        sound.play();
+        //sound.play();
     });
 };
 
@@ -152,7 +170,7 @@ function createBall() {
     ball.position.y = ballRadius;
     return ball;
 }
-
+const mcont=[];
 function loadModel(modelUrl, position, scale, rotation) {
     const loader = new GLTFLoader();
     loader.load(modelUrl, function(gltf) {
@@ -161,8 +179,25 @@ function loadModel(modelUrl, position, scale, rotation) {
         model.position.copy(position);
         model.rotation.copy(rotation);
         scene.add(model);
+        mcont.push(model);
     });
 }
+
+function checkModelCollisions(input) {
+    for (let i = 0; i < mcont.length; i++) {
+        const model = mcont[i];
+        const distance = ball.position.distanceTo(model.position);
+        const collisionThreshold = ballRadius + (model.scale.y / 2); // Adjust collision threshold as needed
+        if (distance < collisionThreshold) {
+            
+            ballVelocity.set(0, 0, 0); // Stop ball movement
+                break;
+        }
+
+        
+    }
+}
+
 const randomModels=[];
 function RandomModel(positionX,positionZ,numModels,modelUrl,scale) {
     const loader = new GLTFLoader();
@@ -207,14 +242,17 @@ window.loop = (dt,cavas,input) => {
     timerDisplay.textContent = 'Time: ' + minutes + 'm ' + seconds + 's';
     score = cubeCount;
     scoreDisplay.textContent = 'Score : '+score;
+    countDisplay.textContent="collect 5 for Ground2 , 15 for Ground3";
     
 
     checkCollision();
+    
     ball.position.add(ballVelocity);
 
     if (input.keys.has('ArrowUp')) {
         ballVelocity.z -= (movementSpeed * dt);
         ball.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -rotationSpeed * dt);
+        //checkModelCollisions(input);
     } 
     if (input.keys.has('ArrowDown')) {
         ballVelocity.z += (movementSpeed * dt);
@@ -250,7 +288,9 @@ window.loop = (dt,cavas,input) => {
     camera.position.x = ball.position.x;
     camera.position.z = ball.position.z+100;
     camera.lookAt(ball.position);
+    
     renderer.render(scene, camera);
+
 };
 
 
@@ -281,7 +321,6 @@ function addRandomCubes(positionX, positionZ, numCubes,image) {
         const material = new THREE.MeshBasicMaterial({ map: texture });
         //const material = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff }); // Random color
         const cube = new THREE.Mesh(geometry, material);
-        //random positions within the specified range
         const randomX = positionX + 2 * Math.random() * (maxPosition - cubeSize * 2) - maxPosition + cubeSize;
         const randomZ = positionZ + 2 * Math.random() * (maxPosition - cubeSize * 2) - maxPosition + cubeSize;
 
@@ -333,6 +372,7 @@ function setback(n){
         if(n1==1){
         //scene.background=new THREE.Color(0xff0000);
         console.log("ground1");
+        scene.background = backgroundImage1;
         /*new RGBELoader().load(hdrs[0],(environmentMap)=>{
 
             //environmentMap.map=THREE.EquirectangularRefractionMapping;
@@ -357,6 +397,7 @@ function setback(n){
                 //environmentMap.map=THREE.EquirectangularRefractionMapping;
                 scene.background=environmentMap;
                 });*/
+            scene.background = backgroundImage2;
             n2=n2+1;
             }
             n1=1;n3=1;n4=1;
@@ -376,6 +417,7 @@ function setback(n){
                 //environmentMap.map=THREE.EquirectangularRefractionMapping;
                 scene.background=environmentMap;
                 });*/
+            scene.background = backgroundImage3;
             n3=n3+1;
             }
             n1=1;n2=1;n4=1;
@@ -391,6 +433,7 @@ function setback(n){
                 //environmentMap.map=THREE.EquirectangularRefractionMapping;
                 scene.background=environmentMap;
                 });*/
+            scene.background = backgroundImage4;
             n4=n4+1;
             }
             n1=1;n2=1;n3=1;
