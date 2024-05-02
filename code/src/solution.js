@@ -5,7 +5,7 @@ import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
 
 let scene, camera, renderer, ball;
 let ballVelocity = new THREE.Vector3();
-let movementSpeed = 0.002;
+let movementSpeed = 0.0025;
 
 let ballRadius = 20;
 let groundSize = 1000;
@@ -15,13 +15,20 @@ let hdrs = [
     '../assets/hdr/sky2.hdr', // Back ground
     '../assets/hdr/sky2.hdr' // Back right ground
 ];
+//'candle':new URL('../assets/models/candle/brass_candleholders_1k.gltf', import.meta.url),
+//    
+
 let models={
     'football':new URL('../assets/scene.gltf', import.meta.url),
     'barrel':new URL('../assets/models/barel_02.glb', import.meta.url),
+    'people':new URL('../assets/models/people1/scene.gltf', import.meta.url),
     'candle':new URL('../assets/models/candle/brass_candleholders_1k.gltf', import.meta.url),
     'stool':new URL('../assets/models/stool/folding_wooden_stool_1k.gltf', import.meta.url),
     'pineapple':new URL('../assets/models/beach_ball.glb', import.meta.url),
     'skull':new URL('../assets/models/skull_downloadable.glb', import.meta.url),
+    'van':new URL('../assets/models/trailer.glb', import.meta.url),
+    'ww1':new URL('../assets/models/stylized_ww1_plane.glb', import.meta.url),
+    'dragon':new URL('../assets/models/tyrannosarus_rex_free_model.glb', import.meta.url),
     'pomelo':new URL('../assets/models/sun_glasses.glb', import.meta.url),
 
 
@@ -87,7 +94,12 @@ window.init = async (canvas) => {
     loadModel(models['football'].href, new THREE.Vector3(400, 20, -400), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, Math.PI / 3, 0));
     // Load barrel model
     loadModel(models['barrel'].href, new THREE.Vector3(900, -20, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, -Math.PI / 3, 0));
-    loadModel(models['candle'].href, new THREE.Vector3(-200, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['people'].href, new THREE.Vector3(-530, 0, 0), new THREE.Vector3(40, 40, 40), new THREE.Euler(0, 1.5*Math.PI / 3, 0));
+    loadModel(models['barrel'].href, new THREE.Vector3(900, -20, 0), new THREE.Vector3(20, 20, 20), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['candle'].href, new THREE.Vector3(-200, 0, -600), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['van'].href, new THREE.Vector3(-600, 0, -800), new THREE.Vector3(70, 70, 70), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['ww1'].href, new THREE.Vector3(100, 50, -800), new THREE.Vector3(100, 100, 100), new THREE.Euler(0, -Math.PI / 3, 0));
+    loadModel(models['dragon'].href, new THREE.Vector3(900, 0, 0), new THREE.Vector3(10, 10, 10), new THREE.Euler(0, 0.5*-Math.PI / 3, 0));
     loadModel(models['stool'].href, new THREE.Vector3(-300, 0, -200), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
     //loadModel(models['pineapple'].href, new THREE.Vector3(100, 0, 0), new THREE.Vector3(60, 60, 60), new THREE.Euler(0, -Math.PI / 3, 0));
 
@@ -139,7 +151,7 @@ window.init = async (canvas) => {
         sound.setBuffer( buffer );
         sound.setLoop( true );
         sound.setVolume( 0.1 );
-        //sound.play();
+        sound.play();
     });
 };
 
