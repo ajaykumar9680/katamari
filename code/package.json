@@ -1,12 +1,23 @@
 {
+  "homepage": "https://ajaykumar9680.github.io/katamari",
   "name": "webgl-playground",
   "version": "0.1.0",
   "description": "An easy place to start.",
   "license": "MIT",
   "scripts": {
-    "dev": "live-server"
+    "dev": "live-server",
+    "deploy": "gh-pages -d build",
+    "build": "webpack"
   },
   "devDependencies": {
-    "live-server": "^1.1.0"
+    "gh-pages": "^6.1.1",
+    "live-server": "^1.1.0",
+    "parcel-bundler": "^1.12.5",
+    "vite": "^5.4.6",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "three": "^0.168.0"
   }
 }
